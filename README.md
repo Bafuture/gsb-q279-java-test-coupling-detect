@@ -19,6 +19,21 @@ Pair-wise GSB 标注任务仓库（第 17 批 / 279）。
 ./mvnw -q verify
 ```
 
+## 实现概览（`com.example.gsb.coupling`）
+
+- 登记层：`TestCase` / `StateStore` / `StateAccessLog` —— 登记测试及其对
+  `STATIC_VARIABLE`、`SINGLETON`、`SYSTEM_PROPERTY`、`TEMP_FILE` 四类共享状态的读写。
+- 耦合识别：`CouplingDetector` 基于"A 写、B 读同一状态"产生 `CouplingPair`，
+  确定性排序；`IgnoreList` 白名单支持精确/通配忽略（按用例对、按状态）。
+- 顺序依赖：`OrderDependencyVerifier` 以原序为基线、逆序重跑（两轮均从同一干净
+  快照出发），输出顺序敏感测试，并定位"污染者"（交换后才先于受害者写入）与
+  "缺失前置"（原序中的写入者交换后落到后面）。
+- 隔离验证：`IsolationVerifier` 对比共享连跑与逐测试恢复快照单跑的结果，
+  输出 `IsolationDiff`。
+- 报告与统计：`CouplingReport.render()` 汇总耦合对、涉及状态、受影响测试、
+  顺序归因、隔离差异与按状态类别给出的隔离建议；`Statistics` 汇总测试数、
+  状态访问次数、耦合对数、顺序敏感测试数等。
+
 ## 任务提示词
 
 以下为本题完整的 User Prompt 原文，两次执行必须使用完全相同的文本。
